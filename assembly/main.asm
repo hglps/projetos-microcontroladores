@@ -67,15 +67,17 @@ BIT_SIGNIFICATIVO_INTERNOS:
 
 	int_3:
 		ldi andar_internos, 3
-		ret
+		jmp BIT_SIGNIFICATIVO_INTERNOS_END
 	int_2:
 		ldi andar_internos, 2
-		ret
+		jmp BIT_SIGNIFICATIVO_INTERNOS_END
 	int_1:
 		ldi andar_internos, 1
-		ret
+		jmp BIT_SIGNIFICATIVO_INTERNOS_END
 	int_0:
 		ldi andar_internos, 0
+
+	BIT_SIGNIFICATIVO_INTERNOS_END:
 		ret
 
 BIT_SIGNIFICATIVO_EXTERNOS:
@@ -101,15 +103,17 @@ BIT_SIGNIFICATIVO_EXTERNOS:
 
 	ext_3:
 		ldi andar_externos, 3
-		ret
+		jmp BIT_SIGNIFICATIVO_EXTERNOS_END
 	ext_2:
 		ldi andar_externos, 2
-		ret
+		jmp BIT_SIGNIFICATIVO_EXTERNOS_END
 	ext_1:
 		ldi andar_externos, 1
-		ret
+		jmp BIT_SIGNIFICATIVO_EXTERNOS_END
 	ext_0:
 		ldi andar_externos, 0
+		
+	BIT_SIGNIFICATIVO_EXTERNOS_END:
 		ret
 
 	
@@ -142,9 +146,9 @@ PORTA_ABERTA:
 	in open, PINC
 	nop
 
-	mov temp open
+	mov temp, open
 	tst temp
-	breq PORTA_ABERTA
+	brne PORTA_ABERTA
 	jmp PORTA_FECHADA
 
 SUBIR_ANDAR:
