@@ -4,45 +4,55 @@
 .def andar_atual=r16
 .def buzzer=r17
 .def led=r18
-.def open=r19
+.def closed=r19
 .def temp = r20
 .def botoes_internos = r21
 .def botoes_externos = r22
 .def andar_internos = r23
 .def andar_externos = r24
 
-; definindo vetor de interrupções
+; definindo vetor de interrupcoes
 .cseg
 jmp RESET
+jmp CLOSE_DOOR
 
 .org $034
 
-RESET: 
+RESET:
+
 ; inicializar pilha
 ldi temp, high(RAMEND)
 out SPH, temp
 ldi temp, low(RAMEND)
 out SPL, temp
 
+; interrupcao em qualquer mudanca em INT0
+ldi temp, 0b0000 | (0b01 << ISC00)
+sts EICRA, temp
+
+; habilita INT0
+ldi temp, (1 << INT0)
+out EIMSK, temp
+
 ;criando o estado inicial: porta aberta com elevador parado e buzzer desligado
 ldi andar_atual, 0
 ldi buzzer, 0
 ldi led, 1
-ldi open, 1
+ldi closed, 0
 
 ; 4 ultimos bits da PORTB para servir de botoes internos
 ldi temp,0b11110000
 out DDRB,temp
 
-; ultimo bit de PORTC para servir de botao fecha porta
-ldi temp,0b11111110
+; 4 ultimos bits da PORTC para servir de botoes externos
+ldi temp,0b11110000
 out DDRC,temp
 
-; 4 ultimos bits da PORTD para servir de botoes externos
-ldi temp,0b11110000
-out DDRD,temp
-
 jmp PORTA_ABERTA
+
+CLOSE_DOOR:
+	ldi closed, 1
+	reti
 
 BIT_SIGNIFICATIVO_INTERNOS:
 	mov temp, botoes_internos
@@ -120,7 +130,7 @@ BIT_SIGNIFICATIVO_EXTERNOS:
 PORTA_FECHADA:
 	in botoes_internos, PINB
 	nop
-	in botoes_externos, PIND
+	in botoes_externos, PINC
 	nop
 
 	call BIT_SIGNIFICATIVO_INTERNOS
@@ -139,16 +149,17 @@ PORTA_FECHADA:
 	jmp DESCER_ANDAR
 	
 PORTA_ABERTA:
+	sei ;;;;;;;;;;;;;;;;;;;;;;;;;
 	in botoes_internos, PINB
 	nop
-	in botoes_externos, PIND
+	in botoes_externos, PINC
 	nop
-	in open, PINC
+	in closed, PIND
 	nop
 
-	mov temp, open
+	mov temp, closed
 	tst temp
-	brne PORTA_ABERTA
+	breq PORTA_ABERTA
 	jmp PORTA_FECHADA
 
 SUBIR_ANDAR:
