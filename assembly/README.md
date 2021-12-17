@@ -9,7 +9,6 @@ Implementar em assembly do AVR um código que simule o funcionamento de um eleva
 
 - 1x Display 7 segmentos para mostrar onde está o elevador
 - 4x Botão para chamar elevador (botão nos andares)
-- 1x Display 7 segmentos para mostrar onde está o elevador 
 - 4x botões para definir para qual andar ir (botão dentro do elevador)
 - 1x botão para abrir a porta
 - 1x botão para fechar a porta
