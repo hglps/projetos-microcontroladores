@@ -52,14 +52,6 @@ out DDRC,temp
 
 jmp PORTA_ABERTA
 
-FECHAR_PORTA:
-	ldi closed, 1
-	reti
-
-ABRIR_PORTA:
-	ldi closed, 0
-	jmp PORTA_ABERTA
-
 BIT_SIGNIFICATIVO_INTERNOS:
 	mov temp, botoes_internos
 	andi temp, 0b1000
@@ -136,6 +128,50 @@ BIT_SIGNIFICATIVO_EXTERNOS:
 	BIT_SIGNIFICATIVO_EXTERNOS_END:
 		ret
 
+ANDAR_ATINGIDO:
+	cpi andar_atual, 3
+	breq andar_3
+
+	cpi andar_atual, 2
+	breq andar_2
+
+	cpi andar_atual, 1
+	breq andar_1
+
+	cpi andar_atual, 0
+	breq andar_0
+		
+	andar_3:
+		andi botoes_internos, 0b00000111
+		andi botoes_externos, 0b00000111
+		jmp ANDAR_ATINGIDO_END
+	andar_2:
+		andi botoes_internos, 0b00001011
+		andi botoes_externos, 0b00001011
+		jmp ANDAR_ATINGIDO_END	
+	andar_1:
+		andi botoes_internos, 0b00001101
+		andi botoes_externos, 0b00001101
+		jmp ANDAR_ATINGIDO_END
+	andar_0:
+		andi botoes_internos, 0b00001110
+		andi botoes_externos, 0b00001110
+		jmp ANDAR_ATINGIDO_END
+
+	ANDAR_ATINGIDO_END:
+		ret
+		
+
+ABRIR_PORTA:	
+	ldi closed, 0
+	call ANDAR_ATINGIDO
+	call BIT_SIGNIFICATIVO_INTERNOS
+	call BIT_SIGNIFICATIVO_EXTERNOS
+	jmp PORTA_ABERTA
+
+FECHAR_PORTA:
+	ldi closed, 1
+	reti
 	
 PORTA_FECHADA:
 	in botoes_internos, PINB
