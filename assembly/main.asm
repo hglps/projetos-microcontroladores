@@ -57,8 +57,8 @@ sts OCR1AL, temp
 ldi temp, ((WGM&0b11) << WGM10) ;lower 2 bits of WGM
 sts TCCR1A, temp
 ;upper 2 bits of WGM and clock select
-ldi temp, ((WGM>> 2) << WGM12)|(PRESCALE << CS10)
-sts TCCR1B, temp ;start counter
+ldi temp, ((WGM>> 2) << WGM12)|(0 << CS10)
+sts TCCR1B, temp
 ;TCCR1B: 000 01       001
 ;            WGM CTC; prescale 
 
@@ -86,6 +86,10 @@ out DDRC,temp
 ; 2 ultimos bits da PORTD para servir de led(1) e buzzer(0), respectivamente
 ldi temp,0b00000011
 out DDRD,temp
+	
+ldi temp, 0b00000010
+out PORTD, temp
+nop
 
 jmp PORTA_ABERTA
 
@@ -197,28 +201,16 @@ ANDAR_ATINGIDO:
 
 	ANDAR_ATINGIDO_END:
 		ret
-		
-
-ABRIR_PORTA:
-	ldi closed, 0
-	call ANDAR_ATINGIDO
-	call BIT_SIGNIFICATIVO_INTERNOS
-	call BIT_SIGNIFICATIVO_EXTERNOS
-	jmp PORTA_ABERTA
 
 FECHAR_PORTA:
+	ldi r31, ((WGM>> 2) << WGM12)|(0 << CS10)
+	sts TCCR1B, r31
+	
 	push temp
 	in temp, SREG
 	push temp
 
 	ldi closed, 1
-	;in temp, TCCR1B
-	; ultimos 3 bits definem prescale: 001 = /1 prescale
-	;                                  000 = timer stopped
-	;dec temp ; 001 => 000
-	ldi temp, ((WGM>> 2) << WGM12)|(0 << CS10)
-	sts TCCR1B, temp ;start counter
-	;sts TCCR1B, temp ;start counter
 
 	pop temp
 	out SREG, temp
@@ -226,11 +218,15 @@ FECHAR_PORTA:
 	reti
 
 TIMER_5us_IR:
+	; desativa timer de 5us
+	ldi r31, ((WGM>> 2) << WGM12)|(0 << CS10)
+	sts TCCR1B, r31
+
 	push temp
 	in temp, SREG
 	push temp
 	
-	; verifica se PORTD[0] está ligado == 1
+	; verifica se PORTD[0] estÃ¡ ligado == 1
 	;in temp, PORTD
 	;nop
 	tst buzzer ; se buzzer == 0, ligar_buzzer
@@ -240,6 +236,7 @@ TIMER_5us_IR:
 	ldi temp, 0
 	out PORTD, temp
 	nop
+	ldi closed, 1
 	
 	jmp TIMER_5us_IR_END
 
@@ -254,11 +251,14 @@ TIMER_5us_IR:
 		pop temp
 		out SREG, temp
 		pop temp
+		; ativa interrupcao de timer de 5us
+		ldi r31, ((WGM>> 2) << WGM12)|(PRESCALE << CS10)
+		sts TCCR1B, r31
+
 		reti
 	
 	
 PORTA_FECHADA:
-	cli
 	ldi led, 0 ; porta fechada
 	in botoes_internos, PINB
 	nop
@@ -280,20 +280,10 @@ PORTA_FECHADA:
 
 	jmp DESCER_ANDAR
 	
-PORTA_ABERTA:
-	; ativa led
-	ldi led, 1 ; porta aberta
-	;in temp, PORTD
-	nop
-	
-	mov temp, buzzer
-	ori temp, 0b00000010
-	out PORTD, temp
-	nop
-
+PORTA_ABERTA:	
 	; ativa interrupcao de timer de 5us
-	ldi temp, ((WGM>> 2) << WGM12)|(PRESCALE << CS10)
-	sts TCCR1B, temp ;start counter
+	ldi r31, ((WGM>> 2) << WGM12)|(PRESCALE << CS10)
+	sts TCCR1B, r31 ;start counter	
 	sei ;;;;;;;;;;;;;;;;;;;;;;;;;
 
 	in botoes_internos, PINB
@@ -304,28 +294,32 @@ PORTA_ABERTA:
 	mov temp, closed
 	tst temp
 	breq PORTA_ABERTA
+	ldi r31, ((WGM>> 2) << WGM12)|(0 << CS10)
+	sts TCCR1B, r31
+	cli
 	jmp PORTA_FECHADA
 
 SUBIR_ANDAR:
-	cli
 	call TIMER_5us
 	call TIMER_5us
 	inc andar_atual
 	jmp PORTA_FECHADA
 
 DESCER_ANDAR:
-	cli
 	call TIMER_5us
 	call TIMER_5us
 	dec andar_atual
 	jmp PORTA_FECHADA
 
 TIMER_5us:
+	cli
+	ldi r31, ((WGM>> 2) << WGM12)|(PRESCALE << CS10)
+	sts TCCR1B, r31 ;start counter	
 	in temp, TIFR1 ;request status from timers
 	andi temp, 1<<OCF1A ;isolate only timer 1's match
 	; 0b1 << OCF1A = 0b1 << 1 = 0b00000010
-	; andi --> 1 (OCF1A � um)	--> overflow
-	; andi --> 0 (OCF1A � zero)	--> contando
+	; andi --> 1 (OCF1A ï¿½ um)	--> overflow
+	; andi --> 0 (OCF1A ï¿½ zero)	--> contando
 	breq skipoverflow ;skip overflow handler
 	;match handler - done once every DELAY seconds
 	ldi temp, 1<<OCF1A ;write a 1 to clear the flag
@@ -340,4 +334,31 @@ TIMER_5us:
 		rjmp TIMER_5us
 
 	TIMER_5us_END:
+		ldi r31, ((WGM>> 2) << WGM12)|(0 << CS10)
+		sts TCCR1B, r31 ;
+		ldi temp, high(0) ;reseta o timer
+		sts TCNT1H, temp
+		ldi temp, low(0)
+		sts TCNT1L, temp
 		ret
+
+
+ABRIR_PORTA:
+	ldi closed, 0
+	call ANDAR_ATINGIDO
+	call BIT_SIGNIFICATIVO_INTERNOS
+	call BIT_SIGNIFICATIVO_EXTERNOS
+	; ativa led
+	ldi led, 1 ; porta aberta
+	;in temp, PORTD
+	nop
+	
+	mov temp, buzzer
+	ori temp, 0b00000010
+	out PORTD, temp
+	nop
+	ldi temp, high(0) ;reseta o timer
+	sts TCNT1H, temp
+	ldi temp, low(0)
+	sts TCNT1L, temp
+	jmp PORTA_ABERTA
