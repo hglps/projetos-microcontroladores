@@ -287,7 +287,7 @@ PORTA_ABERTA:
 	nop
 	
 	mov temp, buzzer
-	or temp, 0b00000010
+	ori temp, 0b00000010
 	out PORTD, temp
 	nop
 
