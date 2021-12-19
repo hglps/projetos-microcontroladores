@@ -4,20 +4,20 @@
 
 ; definindo nomes para os registradores
 .def andar_atual=r16 ; guarda o andar atual
-.def buzzer=r17 ; indica se o buzzer está ligado
-.def led=r18 ; indica se o led está ligado
-.def closed=r19 ; indica se a porta está fechada
+.def buzzer=r17 ; indica se o buzzer estÃ¡ ligado
+.def led=r18 ; indica se o led estÃ¡ ligado
+.def closed=r19 ; indica se a porta estÃ¡ fechada
 .def temp = r20 ; registrador auxiliar
 
-; os registradores abaixo guardam os botões que foram pressionados
-; usam os 4 últimos bits no seguinte formato:
-; andar 3 --- andar 2 --- andar 1 --- térreo
+; os registradores abaixo guardam os botÃµes que foram pressionados
+; usam os 4 Ãºltimos bits no seguinte formato:
+; andar 3 --- andar 2 --- andar 1 --- tÃ©rreo
 .def botoes_internos = r21 
 .def botoes_externos = r22
 
-; guardam o valor do andar prioritário a ir
-; de acordo com os botões pressionados
-; obtido através do bit mais significativo dos registradores acima
+; guardam o valor do andar prioritÃ¡rio a ir
+; de acordo com os botÃµes pressionados
+; obtido atravÃ©s do bit mais significativo dos registradores acima
 .def andar_internos = r23
 .def andar_externos = r24
 
@@ -97,7 +97,7 @@ out DDRC,temp
 ldi temp,0b00000011
 out DDRD,temp
 
-; inicializa com o led ligado, pois a porta está aberta no estado inicial	
+; inicializa com o led ligado, pois a porta estÃ¡ aberta no estado inicial	
 ldi temp, 0b00000010
 out PORTD, temp
 nop
@@ -107,26 +107,26 @@ jmp PORTA_ABERTA
 
 BIT_SIGNIFICATIVO_INTERNOS: ; rotina para extrair o bit mais significativo
 	mov temp, botoes_internos
-	andi temp, 0b1000 ; verifica se é o bit 4
+	andi temp, 0b1000 ; verifica se Ã© o bit 4
 	tst temp
 	brne int_3
 
 	mov temp, botoes_internos
-	andi temp, 0b0100 ; verifica se é o bit 3
+	andi temp, 0b0100 ; verifica se Ã© o bit 3
 	tst temp
 	brne int_2
 
 	mov temp, botoes_internos
-	andi temp, 0b0010 ; verifica se é o bit 2
+	andi temp, 0b0010 ; verifica se Ã© o bit 2
 	tst temp
 	brne int_1
 
 	mov temp, botoes_internos
-	andi temp, 0b0001 ; verifica se é o bit 1
+	andi temp, 0b0001 ; verifica se Ã© o bit 1
 	tst temp
 	brne int_0
 
-	jmp int_0 ; se nenhum botão estiver pressionado, assume valor 0 por padrão
+	jmp int_0 ; se nenhum botao estiver pressionado, assume valor 0 por padrao
 
 	int_3: ; caso seja o bit 4 atribui o valor 3
 		ldi andar_internos, 3
@@ -140,7 +140,7 @@ BIT_SIGNIFICATIVO_INTERNOS: ; rotina para extrair o bit mais significativo
 		ldi andar_internos, 1
 		jmp BIT_SIGNIFICATIVO_INTERNOS_END
 
-	int_0: ; caso seja o bit 1 atribui o valor 0 ou térreo
+	int_0: ; caso seja o bit 1 atribui o valor 0 ou terreo
 		ldi andar_internos, 0
 
 	BIT_SIGNIFICATIVO_INTERNOS_END:
@@ -148,26 +148,26 @@ BIT_SIGNIFICATIVO_INTERNOS: ; rotina para extrair o bit mais significativo
 
 BIT_SIGNIFICATIVO_EXTERNOS: ; rotina para extrair o bit mais significativo
 	mov temp, botoes_externos
-	andi temp, 0b1000 ; verifica se é o bit 4
+	andi temp, 0b1000 ; verifica se Ã© o bit 4
 	tst temp
 	brne ext_3
 
 	mov temp, botoes_externos
-	andi temp, 0b0100 ; verifica se é o bit 3
+	andi temp, 0b0100 ; verifica se Ã© o bit 3
 	tst temp
 	brne ext_2
 
 	mov temp, botoes_externos
-	andi temp, 0b0010 ; verifica se é o bit 2
+	andi temp, 0b0010 ; verifica se Ã© o bit 2
 	tst temp
 	brne ext_1
 
 	mov temp, botoes_externos
-	andi temp, 0b0001 ; verifica se é o bit 1
+	andi temp, 0b0001 ; verifica se Ã© o bit 1
 	tst temp
 	brne ext_0
 
-	jmp ext_0 ; se nenhum botão estiver pressionado, assume valor 0 por padrão
+	jmp ext_0 ; se nenhum botao estiver pressionado, assume valor 0 por padrao
 
 	ext_3: ; caso seja o bit 4 atribui o valor 3
 		ldi andar_externos, 3
@@ -181,13 +181,13 @@ BIT_SIGNIFICATIVO_EXTERNOS: ; rotina para extrair o bit mais significativo
 		ldi andar_externos, 1
 		jmp BIT_SIGNIFICATIVO_EXTERNOS_END
 
-	ext_0: ; caso seja o bit 1 atribui o valor 0 ou térreo
+	ext_0: ; caso seja o bit 1 atribui o valor 0 ou terreo
 		ldi andar_externos, 0
 		
 	BIT_SIGNIFICATIVO_EXTERNOS_END:
 		ret
 
-ANDAR_ATINGIDO: ; rotina que desativa o bit do registrador quando o andar prioritário á atingido
+ANDAR_ATINGIDO: ; rotina que desativa o bit do registrador quando o andar prioritario for atingido
 	cpi andar_atual, 3 ; verifica se parou no andar 3
 	breq andar_3
 
@@ -197,7 +197,7 @@ ANDAR_ATINGIDO: ; rotina que desativa o bit do registrador quando o andar priori
 	cpi andar_atual, 1 ; verifica se parou no andar 1
 	breq andar_1
 
-	cpi andar_atual, 0 ; verifica se parou no andar 0 ou térreo
+	cpi andar_atual, 0 ; verifica se parou no andar 0 ou tÃ©rreo
 	breq andar_0
 		
 	andar_3: ; caso tenha parado no 3, desativa o bit 4 dos registradores
@@ -223,7 +223,7 @@ ANDAR_ATINGIDO: ; rotina que desativa o bit do registrador quando o andar priori
 	ANDAR_ATINGIDO_END:
 		ret
 
-FECHAR_PORTA: ; interrupção que fecha a porta e prepara o elevador para entrar em movimento
+FECHAR_PORTA: ; interrupcao que fecha a porta e prepara o elevador para entrar em movimento
 	ldi r31, ((WGM>> 2) << WGM12)|(0 << CS10) ; desativa a contagem do timer
 	sts TCCR1B, r31
 	
@@ -253,6 +253,8 @@ TIMER_5us_IR:
 
 	; senao, desliga buzzer
 	; desligando buzzer: ao desligar buzzer, 10us se passaram, entao fecha porta e apaga-se led tambem
+	ldi led, 0
+	ldi buzzer, 0
 	ldi temp, 0
 	out PORTD, temp
 	nop
@@ -280,51 +282,51 @@ TIMER_5us_IR:
 	
 PORTA_FECHADA: ; loop do estado de porta fechada
 	ldi led, 0 ; porta fechada
-	in botoes_internos, PINB ; lê os botões internos pressionados
+	in botoes_internos, PINB ; le os botoes internos pressionados
 	nop
-	in botoes_externos, PINC ; lê os botões externos pressionados
+	in botoes_externos, PINC ; le os botoes externos pressionados
 	nop
 
-	; verifica os bits mais significativos para definir o andar prioritário
+	; verifica os bits mais significativos para definir o andar prioritario
 	call BIT_SIGNIFICATIVO_INTERNOS
 	call BIT_SIGNIFICATIVO_EXTERNOS
 
-	; se o andar atual for menor que o prioritario dos botões internos
-	; ou que o prioritario dos botões externos, sobe andar
+	; se o andar atual for menor que o prioritario dos botoes internos
+	; ou que o prioritario dos botoes externos, sobe andar
 	cp andar_atual, andar_externos
 	brlo SUBIR_ANDAR
 	cp andar_atual, andar_internos
 	brlo SUBIR_ANDAR
 
-	; se o andar atual não for menor que o prioritario dos botões internos
-	; ou que o prioritario dos botões externos, sendo igual a um dos dois, para no respectivo andar
+	; se o andar atual nao for menor que o prioritario dos botÃµes internos
+	; ou que o prioritario dos botoes externos, sendo igual a um dos dois, para no respectivo andar
 	cp andar_atual, andar_externos
 	breq ABRIR_PORTA
 	cp andar_atual, andar_internos
 	breq ABRIR_PORTA
 
-	; se o andar atual não for menor nem igual ao prioritario dos botões internos
-	; ou ao prioritario dos botões externos,  desce de andar
+	; se o andar atual nao for menor nem igual ao prioritario dos botoes internos
+	; ou ao prioritario dos botoes externos,  desce de andar
 	jmp DESCER_ANDAR
 	
 PORTA_ABERTA: ; loop do estado de porta aberta
 	; ativa contagem do timer
 	ldi r31, ((WGM>> 2) << WGM12)|(PRESCALE << CS10)
 	sts TCCR1B, r31
-	sei ; ativa interrupções
+	sei ; ativa interrupcoes
 
-	in botoes_internos, PINB ; lê os botões internos pressionados
+	in botoes_internos, PINB ; le os botÃµes internos pressionados
 	nop
-	in botoes_externos, PINC ; lê os botões externos pressionados
+	in botoes_externos, PINC ; le os botÃµes externos pressionados
 	nop
 
 	mov temp, closed
-	tst temp ; verifica se a porta está fechada
-	breq PORTA_ABERTA ; caso não esteja, segue no loop
+	tst temp ; verifica se a porta estÃ¡ fechada
+	breq PORTA_ABERTA ; caso nÃ£o esteja, segue no loop
 	; caso estajs fechada:
 	ldi r31, ((WGM>> 2) << WGM12)|(0 << CS10)  ; desativa a contagem do timer
 	sts TCCR1B, r31
-	cli ; desativa interrupções
+	cli ; desativa interrupÃ§Ãµes
 	jmp PORTA_FECHADA ; vai para o estado porta fechada
 
 SUBIR_ANDAR: ; rotina para simular a subida de andar
@@ -347,8 +349,8 @@ TIMER_5us: ; rotina para causa delay de 5us
 	in temp, TIFR1 ; obtem informacao do valor final do contador
 	andi temp, 1<<OCF1A ; verifica no bit OCF1A se deu overflow no contador
 	; 0b1 << OCF1A = 0b1 << 1 = 0b00000010
-	; andi --> 1 (OCF1A ? um)	--> overflow
-	; andi --> 0 (OCF1A ? zero)	--> contando
+	; andi --> 1 (OCF1A ï¿½ um)	--> overflow
+	; andi --> 0 (OCF1A ï¿½ zero)	--> contando
 	breq skipoverflow ; se nao deu overflow: flag zero == 0 => pula overflow e repete loop
 	
 	; se deu overflow: flag zero == 1 => finaliza contagem
