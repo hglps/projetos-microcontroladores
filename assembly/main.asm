@@ -126,7 +126,7 @@ BIT_SIGNIFICATIVO_INTERNOS: ; rotina para extrair o bit mais significativo
 	tst temp
 	brne int_0
 
-	jmp int_0 ; se nenhum botao estiver pressionado, assume valor 0 por padrao
+	jmp int_0 ; se nenhum botão estiver pressionado, assume valor 0 por padrão
 
 	int_3: ; caso seja o bit 4 atribui o valor 3
 		ldi andar_internos, 3
@@ -140,7 +140,7 @@ BIT_SIGNIFICATIVO_INTERNOS: ; rotina para extrair o bit mais significativo
 		ldi andar_internos, 1
 		jmp BIT_SIGNIFICATIVO_INTERNOS_END
 
-	int_0: ; caso seja o bit 1 atribui o valor 0 ou terreo
+	int_0: ; caso seja o bit 1 atribui o valor 0 ou térreo
 		ldi andar_internos, 0
 
 	BIT_SIGNIFICATIVO_INTERNOS_END:
@@ -167,7 +167,7 @@ BIT_SIGNIFICATIVO_EXTERNOS: ; rotina para extrair o bit mais significativo
 	tst temp
 	brne ext_0
 
-	jmp ext_0 ; se nenhum botao estiver pressionado, assume valor 0 por padrao
+	jmp ext_0 ; se nenhum botão estiver pressionado, assume valor 0 por padrão
 
 	ext_3: ; caso seja o bit 4 atribui o valor 3
 		ldi andar_externos, 3
@@ -181,13 +181,13 @@ BIT_SIGNIFICATIVO_EXTERNOS: ; rotina para extrair o bit mais significativo
 		ldi andar_externos, 1
 		jmp BIT_SIGNIFICATIVO_EXTERNOS_END
 
-	ext_0: ; caso seja o bit 1 atribui o valor 0 ou terreo
+	ext_0: ; caso seja o bit 1 atribui o valor 0 ou térreo
 		ldi andar_externos, 0
 		
 	BIT_SIGNIFICATIVO_EXTERNOS_END:
 		ret
 
-ANDAR_ATINGIDO: ; rotina que desativa o bit do registrador quando o andar prioritario for atingido
+ANDAR_ATINGIDO: ; rotina que desativa o bit do registrador quando o andar prioritário á atingido
 	cpi andar_atual, 3 ; verifica se parou no andar 3
 	breq andar_3
 
@@ -223,7 +223,7 @@ ANDAR_ATINGIDO: ; rotina que desativa o bit do registrador quando o andar priori
 	ANDAR_ATINGIDO_END:
 		ret
 
-FECHAR_PORTA: ; interrupcao que fecha a porta e prepara o elevador para entrar em movimento
+FECHAR_PORTA: ; interrupção que fecha a porta e prepara o elevador para entrar em movimento
 	ldi r31, ((WGM>> 2) << WGM12)|(0 << CS10) ; desativa a contagem do timer
 	sts TCCR1B, r31
 	
@@ -232,6 +232,8 @@ FECHAR_PORTA: ; interrupcao que fecha a porta e prepara o elevador para entrar e
 	push temp
 
 	ldi closed, 1 ; fecha a porta
+	ldi temp, 0
+	out PORTD, temp
 
 	pop temp
 	out SREG, temp
@@ -282,42 +284,42 @@ TIMER_5us_IR:
 	
 PORTA_FECHADA: ; loop do estado de porta fechada
 	ldi led, 0 ; porta fechada
-	in botoes_internos, PINB ; le os botoes internos pressionados
+	in botoes_internos, PINB ; lê os botões internos pressionados
 	nop
-	in botoes_externos, PINC ; le os botoes externos pressionados
+	in botoes_externos, PINC ; lê os botões externos pressionados
 	nop
 
-	; verifica os bits mais significativos para definir o andar prioritario
+	; verifica os bits mais significativos para definir o andar prioritário
 	call BIT_SIGNIFICATIVO_INTERNOS
 	call BIT_SIGNIFICATIVO_EXTERNOS
 
-	; se o andar atual for menor que o prioritario dos botoes internos
-	; ou que o prioritario dos botoes externos, sobe andar
+	; se o andar atual for menor que o prioritario dos botões internos
+	; ou que o prioritario dos botões externos, sobe andar
 	cp andar_atual, andar_externos
 	brlo SUBIR_ANDAR
 	cp andar_atual, andar_internos
 	brlo SUBIR_ANDAR
 
-	; se o andar atual nao for menor que o prioritario dos botões internos
-	; ou que o prioritario dos botoes externos, sendo igual a um dos dois, para no respectivo andar
+	; se o andar atual não for menor que o prioritario dos botões internos
+	; ou que o prioritario dos botões externos, sendo igual a um dos dois, para no respectivo andar
 	cp andar_atual, andar_externos
 	breq ABRIR_PORTA
 	cp andar_atual, andar_internos
 	breq ABRIR_PORTA
 
-	; se o andar atual nao for menor nem igual ao prioritario dos botoes internos
-	; ou ao prioritario dos botoes externos,  desce de andar
+	; se o andar atual não for menor nem igual ao prioritario dos botões internos
+	; ou ao prioritario dos botões externos,  desce de andar
 	jmp DESCER_ANDAR
 	
 PORTA_ABERTA: ; loop do estado de porta aberta
 	; ativa contagem do timer
 	ldi r31, ((WGM>> 2) << WGM12)|(PRESCALE << CS10)
 	sts TCCR1B, r31
-	sei ; ativa interrupcoes
+	sei ; ativa interrupções
 
-	in botoes_internos, PINB ; le os botões internos pressionados
+	in botoes_internos, PINB ; lê os botões internos pressionados
 	nop
-	in botoes_externos, PINC ; le os botões externos pressionados
+	in botoes_externos, PINC ; lê os botões externos pressionados
 	nop
 
 	mov temp, closed
